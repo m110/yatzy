@@ -45,20 +45,11 @@ func sumOfDice(dice []entity.Die, value uint) uint {
 }
 
 func onePair(dice []entity.Die) uint {
-	pairs := map[uint]uint{}
-
-	for _, d := range dice {
-		v, ok := pairs[d.Value]
-		if ok {
-			pairs[d.Value] = v + 1
-		} else {
-			pairs[d.Value] = 1
-		}
-	}
-
 	var score uint
 
-	for k, v := range pairs {
+	counts := diceCounts(dice)
+
+	for k, v := range counts {
 		if v >= 2 {
 			s := k * 2
 			if s > score {
@@ -71,20 +62,11 @@ func onePair(dice []entity.Die) uint {
 }
 
 func twoPairs(dice []entity.Die) uint {
-	pairs := map[uint]uint{}
-
-	for _, d := range dice {
-		v, ok := pairs[d.Value]
-		if ok {
-			pairs[d.Value] = v + 1
-		} else {
-			pairs[d.Value] = 1
-		}
-	}
+	counts := diceCounts(dice)
 
 	var scores []int
 
-	for k, v := range pairs {
+	for k, v := range counts {
 		if v >= 2 {
 			scores = append(scores, int(k)*2)
 		}
@@ -100,33 +82,62 @@ func twoPairs(dice []entity.Die) uint {
 }
 
 func threeOfAKind(dice []entity.Die) uint {
-	var score uint
-
-	return score
+	return atLeastCount(dice, 3)
 }
 
 func fourOfAKind(dice []entity.Die) uint {
-	var score uint
-
-	return score
+	return atLeastCount(dice, 4)
 }
 
 func smallStraight(dice []entity.Die) uint {
-	var score uint
+	if sumOfDice(dice, 1) > 0 &&
+		sumOfDice(dice, 2) > 0 &&
+		sumOfDice(dice, 3) > 0 &&
+		sumOfDice(dice, 4) > 0 &&
+		sumOfDice(dice, 5) > 0 {
+		return 15
+	}
 
-	return score
+	return 0
 }
 
 func largeStraight(dice []entity.Die) uint {
-	var score uint
+	if sumOfDice(dice, 2) > 0 &&
+		sumOfDice(dice, 3) > 0 &&
+		sumOfDice(dice, 4) > 0 &&
+		sumOfDice(dice, 5) > 0 &&
+		sumOfDice(dice, 6) > 0 {
+		return 20
+	}
 
-	return score
+	return 0
 }
 
 func fullHouse(dice []entity.Die) uint {
-	var score uint
+	var pairScore uint
+	var threeOfAKindScore uint
 
-	return score
+	counts := diceCounts(dice)
+
+	for k, v := range counts {
+		if v == 2 {
+			s := k * 2
+			if s > pairScore {
+				pairScore = s
+			}
+		} else if v == 3 {
+			s := k * 3
+			if s > threeOfAKindScore {
+				threeOfAKindScore = s
+			}
+		}
+	}
+
+	if pairScore > 0 && threeOfAKindScore > 0 {
+		return pairScore + threeOfAKindScore
+	}
+
+	return 0
 }
 
 func chance(dice []entity.Die) uint {
@@ -140,7 +151,35 @@ func chance(dice []entity.Die) uint {
 }
 
 func yatzy(dice []entity.Die) uint {
-	var score uint
+	if atLeastCount(dice, 5) > 0 {
+		return 50
+	}
 
-	return score
+	return 0
+}
+
+func atLeastCount(dice []entity.Die, c uint) uint {
+	counts := diceCounts(dice)
+	for k, v := range counts {
+		if v >= c {
+			return k * c
+		}
+	}
+
+	return 0
+}
+
+func diceCounts(dice []entity.Die) map[uint]uint {
+	counts := map[uint]uint{}
+
+	for _, d := range dice {
+		v, ok := counts[d.Value]
+		if ok {
+			counts[d.Value] = v + 1
+		} else {
+			counts[d.Value] = 1
+		}
+	}
+
+	return counts
 }

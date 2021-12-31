@@ -24,7 +24,8 @@ var (
 func MustLoadSprite(name string) *ebiten.Image {
 	i, err := LoadSprite(name)
 	if err != nil {
-		log.Fatal(err)
+		// TODO Used in tests where the relative path differs
+		log.Println(err)
 	}
 	return i
 }
