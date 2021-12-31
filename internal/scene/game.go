@@ -35,7 +35,6 @@ var selectionKeys = map[ebiten.Key]int{
 	ebiten.Key3: 2,
 	ebiten.Key4: 3,
 	ebiten.Key5: 4,
-	ebiten.Key6: 5,
 }
 
 func (g *Game) Update() error {
@@ -66,9 +65,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	dicePanel.Fill(colornames.Azure)
 
 	offsetX := 10.0
+	offsetY := 10.0
 	for _, d := range g.dice {
+		if d.Selected {
+			selectionImage := ebiten.NewImage(d.Sprite.Image.Bounds().Dx()+6, d.Sprite.Image.Bounds().Dy()+6)
+			selectionImage.Fill(colornames.Yellow)
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(offsetX-3, offsetY-3)
+			dicePanel.DrawImage(selectionImage, op)
+		}
+
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(offsetX, 10)
+		op.GeoM.Translate(offsetX, offsetY)
 		dicePanel.DrawImage(d.Sprite.Image, op)
 		offsetX += float64(d.Sprite.Image.Bounds().Max.X) + 10.0
 	}
