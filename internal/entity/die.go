@@ -5,13 +5,13 @@ import (
 	"math/rand"
 
 	"github.com/m110/yatzy/internal/assets"
-
 	"github.com/m110/yatzy/internal/component"
 )
 
 type Die struct {
-	Value  uint
-	Sprite component.Sprite
+	Value    uint
+	Selected bool
+	Sprite   component.Sprite
 }
 
 func MustNewDie(value uint) Die {
@@ -39,4 +39,12 @@ func (d *Die) Roll() {
 	d.Sprite = component.Sprite{
 		Image: assets.Dice[value-1],
 	}
+}
+
+func (d *Die) ToggleSelection() {
+	d.Selected = !d.Selected
+}
+
+func (d *Die) ClearSelection() {
+	d.Selected = false
 }

@@ -10,6 +10,42 @@ import (
 	"github.com/m110/yatzy/internal/entity"
 )
 
+func TestSixes(t *testing.T) {
+	testCases := []struct {
+		Dice          []uint
+		ExpectedScore uint
+	}{
+		{
+			Dice:          []uint{1, 2, 3, 4, 5},
+			ExpectedScore: 0,
+		},
+		{
+			Dice:          []uint{1, 2, 3, 4, 6},
+			ExpectedScore: 6,
+		},
+		{
+			Dice:          []uint{1, 2, 3, 6, 6},
+			ExpectedScore: 12,
+		},
+		{
+			Dice:          []uint{5, 5, 5, 5, 5},
+			ExpectedScore: 0,
+		},
+		{
+			Dice:          []uint{6, 6, 6, 6, 6},
+			ExpectedScore: 30,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(testName(tc.Dice), func(t *testing.T) {
+			dice := diceFromValues(tc.Dice)
+			score := sixes(dice)
+			assert.Equal(t, tc.ExpectedScore, score)
+		})
+	}
+}
+
 func TestOnePair(t *testing.T) {
 	testCases := []struct {
 		Dice          []uint

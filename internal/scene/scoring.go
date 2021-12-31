@@ -6,7 +6,7 @@ import (
 	"github.com/m110/yatzy/internal/entity"
 )
 
-type appliesFunc func([]entity.Die) uint
+type scoringFunc func([]entity.Die) uint
 
 func ones(dice []entity.Die) uint {
 	return sumOfDice(dice, 1)
