@@ -47,22 +47,46 @@ func NewTable() *Table {
 }
 
 func (t *Table) Update() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		for _, b := range t.Boxes {
-			if b.Selected {
-				b.Selected = false
-				break
+	var available []*Box
+	for _, b := range t.Boxes {
+		if !b.Filled {
+			available = append(available, b)
+		}
+	}
+
+	if len(available) > 1 {
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+			for i, b := range available {
+				if b.Selected {
+					var next int
+					if i == len(available)-1 {
+						next = 0
+					} else {
+						next = i + 1
+					}
+					b.Selected = false
+					available[next].Selected = true
+					break
+				}
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+			for i, b := range available {
+				if b.Selected {
+					var next int
+					if i == 0 {
+						next = len(available) - 1
+					} else {
+						next = i - 1
+					}
+					b.Selected = false
+					available[next].Selected = true
+					break
+				}
 			}
 		}
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		for _, b := range t.Boxes {
-			if b.Selected {
-				b.Selected = false
-				break
-			}
-		}
-	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		for _, b := range t.Boxes {
 			if b.Selected {
@@ -109,7 +133,13 @@ func (t *Table) Draw(screen *ebiten.Image) {
 		if b.Filled {
 			text.Draw(screen, strconv.Itoa(int(b.Points)), assets.NormalFont, 150, offsetY, colornames.White)
 		} else if t.ShowingAvailablePoints {
-			text.Draw(screen, strconv.Itoa(int(b.AvailablePoints)), assets.NormalFont, 150, offsetY, colornames.Gray)
+			var c color.RGBA
+			if b.AvailablePoints == 0 {
+				c = colornames.Gray
+			} else {
+				c = colornames.Yellow
+			}
+			text.Draw(screen, strconv.Itoa(int(b.AvailablePoints)), assets.NormalFont, 150, offsetY, c)
 		}
 
 		offsetY += 20

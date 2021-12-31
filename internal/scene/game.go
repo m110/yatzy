@@ -61,6 +61,7 @@ func (g *Game) Update() error {
 		}
 
 		if g.table.Ready() {
+			g.table.HideAvailablePoints()
 			g.RollAllDice()
 			g.rerolls = 0
 		}
