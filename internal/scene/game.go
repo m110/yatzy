@@ -12,8 +12,9 @@ const (
 )
 
 type Game struct {
-	dice  []entity.Die
-	table *Table
+	dice    []entity.Die
+	table   *Table
+	rerolls int
 }
 
 func NewGame() *Game {
@@ -38,14 +39,16 @@ var selectionKeys = map[ebiten.Key]int{
 }
 
 func (g *Game) Update() error {
-	for k, v := range selectionKeys {
-		if inpututil.IsKeyJustPressed(k) {
-			g.dice[v].ToggleSelection()
+	if g.rerolls < 2 {
+		for k, v := range selectionKeys {
+			if inpututil.IsKeyJustPressed(k) {
+				g.dice[v].ToggleSelection()
+			}
 		}
-	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		g.RollSelectedDice()
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			g.RollSelectedDice()
+		}
 	}
 
 	return nil
@@ -57,6 +60,11 @@ func (g *Game) RollSelectedDice() {
 			g.dice[i].ClearSelection()
 			g.dice[i].Roll()
 		}
+	}
+	g.rerolls++
+
+	if g.rerolls == 2 {
+		g.table.ShowAvailablePoints(g.dice)
 	}
 }
 

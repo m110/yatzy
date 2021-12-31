@@ -4,15 +4,17 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
-	"github.com/m110/yatzy/internal/assets"
 	"golang.org/x/image/colornames"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/m110/yatzy/internal/assets"
+	"github.com/m110/yatzy/internal/entity"
 )
 
 type Table struct {
-	Boxes []*Box
+	Boxes                  []*Box
+	ShowingAvailablePoints bool
 }
 
 func NewTable() *Table {
@@ -49,10 +51,28 @@ func (t *Table) Draw(screen *ebiten.Image) {
 
 		if b.Filled {
 			text.Draw(screen, strconv.Itoa(int(b.Points)), assets.NormalFont, 100, offsetY, colornames.White)
+		} else if t.ShowingAvailablePoints {
+			text.Draw(screen, strconv.Itoa(int(b.AvailablePoints)), assets.NormalFont, 150, offsetY, colornames.Gray)
 		}
 
 		offsetY += 20
 	}
+}
+
+func (t *Table) ShowAvailablePoints(dice []entity.Die) {
+	for i, b := range t.Boxes {
+		if b.Filled {
+			continue
+		}
+
+		t.Boxes[i].AvailablePoints = b.Scoring(dice)
+	}
+
+	t.ShowingAvailablePoints = true
+}
+
+func (t *Table) HideAvailablePoints() {
+	t.ShowingAvailablePoints = false
 }
 
 func (t *Table) UpperSectionBonus() uint {
@@ -71,10 +91,11 @@ func (t *Table) UpperSectionBonus() uint {
 }
 
 type Box struct {
-	Name    string
-	Filled  bool
-	Points  uint
-	Scoring scoringFunc
+	Name            string
+	Filled          bool
+	Points          uint
+	AvailablePoints uint
+	Scoring         scoringFunc
 }
 
 func (b *Box) Fill(points uint) {
