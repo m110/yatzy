@@ -1,8 +1,11 @@
 package scene
 
 import (
+	"image/color"
 	"log"
 	"strconv"
+
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
@@ -43,14 +46,68 @@ func NewTable() *Table {
 	}
 }
 
+func (t *Table) Update() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+		for _, b := range t.Boxes {
+			if b.Selected {
+				b.Selected = false
+				break
+			}
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+		for _, b := range t.Boxes {
+			if b.Selected {
+				b.Selected = false
+				break
+			}
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		for _, b := range t.Boxes {
+			if b.Selected {
+				b.Fill()
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func (t *Table) Ready() bool {
+	for _, b := range t.Boxes {
+		if b.Selected {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (t *Table) Full() bool {
+	for _, b := range t.Boxes {
+		if !b.Filled {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (t *Table) Draw(screen *ebiten.Image) {
 	offsetY := 20
 
 	for _, b := range t.Boxes {
-		text.Draw(screen, b.Name, assets.NormalFont, 10, offsetY, colornames.White)
+		var c color.RGBA
+		if b.Selected {
+			c = colornames.Yellow
+		} else {
+			c = colornames.White
+		}
+		text.Draw(screen, b.Name, assets.NormalFont, 10, offsetY, c)
 
 		if b.Filled {
-			text.Draw(screen, strconv.Itoa(int(b.Points)), assets.NormalFont, 100, offsetY, colornames.White)
+			text.Draw(screen, strconv.Itoa(int(b.Points)), assets.NormalFont, 150, offsetY, colornames.White)
 		} else if t.ShowingAvailablePoints {
 			text.Draw(screen, strconv.Itoa(int(b.AvailablePoints)), assets.NormalFont, 150, offsetY, colornames.Gray)
 		}
@@ -69,6 +126,13 @@ func (t *Table) ShowAvailablePoints(dice []entity.Die) {
 	}
 
 	t.ShowingAvailablePoints = true
+
+	for i, b := range t.Boxes {
+		if !b.Filled {
+			t.Boxes[i].Selected = true
+			break
+		}
+	}
 }
 
 func (t *Table) HideAvailablePoints() {
@@ -96,13 +160,16 @@ type Box struct {
 	Points          uint
 	AvailablePoints uint
 	Scoring         scoringFunc
+	Selected        bool
 }
 
-func (b *Box) Fill(points uint) {
+func (b *Box) Fill() {
 	if b.Filled {
 		log.Fatal("Box already filled")
 	}
 
 	b.Filled = true
-	b.Points = points
+	b.Points = b.AvailablePoints
+	b.AvailablePoints = 0
+	b.Selected = false
 }

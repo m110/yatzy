@@ -49,9 +49,31 @@ func (g *Game) Update() error {
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			g.RollSelectedDice()
 		}
+	} else {
+		err := g.table.Update()
+		if err != nil {
+			return err
+		}
+
+		if g.table.Full() {
+			// TODO game over
+			return nil
+		}
+
+		if g.table.Ready() {
+			g.RollAllDice()
+			g.rerolls = 0
+		}
 	}
 
 	return nil
+}
+
+func (g *Game) RollAllDice() {
+	for i := range g.dice {
+		g.dice[i].ClearSelection()
+		g.dice[i].Roll()
+	}
 }
 
 func (g *Game) RollSelectedDice() {
