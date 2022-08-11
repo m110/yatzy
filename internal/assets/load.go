@@ -3,9 +3,10 @@ package assets
 import (
 	"image"
 	_ "image/png"
+	"io/fs"
 	"log"
-	"os"
-	"path"
+
+	"github.com/m110/yatzy/assets"
 
 	"golang.org/x/image/font"
 
@@ -39,12 +40,12 @@ func MustLoadFont(name string) font.Face {
 }
 
 func LoadFont(name string) (font.Face, error) {
-	f, err := os.ReadFile(path.Join("assets", name))
+	b, err := fs.ReadFile(assets.FS, name)
 	if err != nil {
 		return nil, err
 	}
 
-	parsedFont, err := opentype.Parse(f)
+	parsedFont, err := opentype.Parse(b)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,8 @@ func MustLoadSprite(name string) *ebiten.Image {
 }
 
 func LoadSprite(name string) (*ebiten.Image, error) {
-	f, err := os.OpenFile(path.Join("assets", name), os.O_RDONLY, 0644)
+	f, err := assets.FS.Open(name)
+
 	if err != nil {
 		return nil, err
 	}
