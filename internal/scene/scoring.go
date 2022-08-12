@@ -90,11 +90,12 @@ func fourOfAKind(dice []entity.Die) uint {
 }
 
 func smallStraight(dice []entity.Die) uint {
-	if sumOfDice(dice, 1) > 0 &&
-		sumOfDice(dice, 2) > 0 &&
-		sumOfDice(dice, 3) > 0 &&
-		sumOfDice(dice, 4) > 0 &&
-		sumOfDice(dice, 5) > 0 {
+	counts := diceCounts(dice)
+	if counts[1] > 0 &&
+		counts[2] > 0 &&
+		counts[3] > 0 &&
+		counts[4] > 0 &&
+		counts[5] > 0 {
 		return 15
 	}
 
@@ -102,11 +103,12 @@ func smallStraight(dice []entity.Die) uint {
 }
 
 func largeStraight(dice []entity.Die) uint {
-	if sumOfDice(dice, 2) > 0 &&
-		sumOfDice(dice, 3) > 0 &&
-		sumOfDice(dice, 4) > 0 &&
-		sumOfDice(dice, 5) > 0 &&
-		sumOfDice(dice, 6) > 0 {
+	counts := diceCounts(dice)
+	if counts[2] > 0 &&
+		counts[3] > 0 &&
+		counts[4] > 0 &&
+		counts[5] > 0 &&
+		counts[6] > 0 {
 		return 20
 	}
 

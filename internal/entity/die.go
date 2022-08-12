@@ -4,6 +4,8 @@ import (
 	"log"
 	"math/rand"
 
+	"github.com/hajimehoshi/ebiten/v2"
+
 	"github.com/m110/yatzy/internal/assets"
 	"github.com/m110/yatzy/internal/component"
 )

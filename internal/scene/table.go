@@ -5,9 +5,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
-
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/colornames"
 
@@ -118,8 +117,16 @@ func (t *Table) Full() bool {
 	return true
 }
 
+const (
+	tableStartOffsetY = 30
+	tableOffsetY      = 30
+	tableOffsetX      = 10
+
+	tableScoreOffsetX = 200
+)
+
 func (t *Table) Draw(screen *ebiten.Image) {
-	offsetY := 20
+	offsetY := tableStartOffsetY
 
 	for _, b := range t.Boxes {
 		var c color.RGBA
@@ -128,10 +135,10 @@ func (t *Table) Draw(screen *ebiten.Image) {
 		} else {
 			c = colornames.White
 		}
-		text.Draw(screen, b.Name, assets.NormalFont, 10, offsetY, c)
+		text.Draw(screen, b.Name, assets.NormalFont, tableOffsetX, offsetY, c)
 
 		if b.Filled {
-			text.Draw(screen, strconv.Itoa(int(b.Points)), assets.NormalFont, 150, offsetY, colornames.White)
+			text.Draw(screen, strconv.Itoa(int(b.Points)), assets.NormalFont, tableScoreOffsetX, offsetY, colornames.White)
 		} else if t.ShowingAvailablePoints {
 			var c color.RGBA
 			if b.AvailablePoints == 0 {
@@ -139,10 +146,10 @@ func (t *Table) Draw(screen *ebiten.Image) {
 			} else {
 				c = colornames.Yellow
 			}
-			text.Draw(screen, strconv.Itoa(int(b.AvailablePoints)), assets.NormalFont, 150, offsetY, c)
+			text.Draw(screen, strconv.Itoa(int(b.AvailablePoints)), assets.NormalFont, tableScoreOffsetX, offsetY, c)
 		}
 
-		offsetY += 20
+		offsetY += tableOffsetY
 	}
 }
 

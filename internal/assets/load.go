@@ -51,7 +51,7 @@ func LoadFont(name string) (font.Face, error) {
 	}
 
 	face, err := opentype.NewFace(parsedFont, &opentype.FaceOptions{
-		Size:    16,
+		Size:    24,
 		DPI:     dpi,
 		Hinting: font.HintingFull,
 	})

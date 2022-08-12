@@ -3,8 +3,9 @@ package scene
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/m110/yatzy/internal/entity"
 	"golang.org/x/image/colornames"
+
+	"github.com/m110/yatzy/internal/entity"
 )
 
 const (
@@ -25,8 +26,9 @@ func NewGame() *Game {
 	}
 
 	return &Game{
-		dice:  dice,
-		table: NewTable(),
+		dice:    dice,
+		table:   NewTable(),
+		rerolls: 0,
 	}
 }
 
@@ -91,38 +93,55 @@ func (g *Game) RollSelectedDice() {
 	}
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
-	dicePanel := ebiten.NewImage(500, 100)
-	dicePanel.Fill(colornames.Azure)
+const (
+	diePanelWidth  = 64*diceNumber + (1+diceNumber)*dieOffsetX
+	diePanelHeight = 64 + 2*dieOffsetY
 
-	offsetX := 10.0
-	offsetY := 10.0
+	tablePanelWidth  = diePanelWidth
+	tablePanelHeight = 500
+
+	dieOffsetX = 10.0
+	dieOffsetY = 10.0
+
+	highlightBorderOffset = 10.0
+	highlightBorderSize   = 20.0
+)
+
+func (g *Game) Draw(screen *ebiten.Image) {
+	dicePanel := ebiten.NewImage(diePanelWidth, diePanelHeight)
+	dicePanel.Fill(colornames.Forestgreen)
+
+	offsetX := dieOffsetX
+	offsetY := dieOffsetY
 	for _, d := range g.dice {
 		if d.Selected {
-			selectionImage := ebiten.NewImage(d.Sprite.Image.Bounds().Dx()+6, d.Sprite.Image.Bounds().Dy()+6)
-			selectionImage.Fill(colornames.Yellow)
+			selectionImage := ebiten.NewImage(d.Sprite.Image.Bounds().Dx(), highlightBorderSize)
+			selectionImage.Fill(colornames.Blueviolet)
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(offsetX-3, offsetY-3)
+			op.GeoM.Translate(offsetX, offsetY+float64(d.Sprite.Image.Bounds().Dy())-highlightBorderOffset)
 			dicePanel.DrawImage(selectionImage, op)
 		}
 
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(offsetX, offsetY)
 		dicePanel.DrawImage(d.Sprite.Image, op)
-		offsetX += float64(d.Sprite.Image.Bounds().Max.X) + 10.0
+		offsetX += float64(d.Sprite.Image.Bounds().Max.X) + dieOffsetX
 	}
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(50, 50)
 	screen.DrawImage(dicePanel, op)
 
-	tablePanel := ebiten.NewImage(300, 500)
-	tablePanel.Fill(colornames.Coral)
+	tablePanel := ebiten.NewImage(tablePanelWidth, tablePanelHeight)
+	tablePanel.Fill(colornames.Darkgreen)
 	g.table.Draw(tablePanel)
 
 	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(10, 200)
+	op.GeoM.Translate(0, diePanelHeight)
 	screen.DrawImage(tablePanel, op)
+}
+
+func (g *Game) WindowSize() (int, int) {
+	return diePanelWidth, diePanelHeight + tablePanelHeight
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

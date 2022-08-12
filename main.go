@@ -12,9 +12,10 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	ebiten.SetWindowSize(800, 600)
+	game := scene.NewGame()
+	ebiten.SetWindowSize(game.WindowSize())
 
-	err := ebiten.RunGame(scene.NewGame())
+	err := ebiten.RunGame(game)
 	if err != nil {
 		log.Fatal(err)
 	}
