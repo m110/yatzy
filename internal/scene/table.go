@@ -153,7 +153,7 @@ func (t *Table) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (t *Table) ShowAvailablePoints(dice []entity.Die) {
+func (t *Table) ShowAvailablePoints(dice []*entity.Die) {
 	for i, b := range t.Boxes {
 		if b.Filled {
 			continue

@@ -6,33 +6,33 @@ import (
 	"github.com/m110/yatzy/internal/entity"
 )
 
-type scoringFunc func([]entity.Die) uint
+type scoringFunc func([]*entity.Die) uint
 
-func ones(dice []entity.Die) uint {
+func ones(dice []*entity.Die) uint {
 	return sumOfDice(dice, 1)
 }
 
-func twos(dice []entity.Die) uint {
+func twos(dice []*entity.Die) uint {
 	return sumOfDice(dice, 2)
 }
 
-func threes(dice []entity.Die) uint {
+func threes(dice []*entity.Die) uint {
 	return sumOfDice(dice, 3)
 }
 
-func fours(dice []entity.Die) uint {
+func fours(dice []*entity.Die) uint {
 	return sumOfDice(dice, 4)
 }
 
-func fives(dice []entity.Die) uint {
+func fives(dice []*entity.Die) uint {
 	return sumOfDice(dice, 5)
 }
 
-func sixes(dice []entity.Die) uint {
+func sixes(dice []*entity.Die) uint {
 	return sumOfDice(dice, 6)
 }
 
-func sumOfDice(dice []entity.Die, value uint) uint {
+func sumOfDice(dice []*entity.Die, value uint) uint {
 	var score uint
 
 	for _, d := range dice {
@@ -44,7 +44,7 @@ func sumOfDice(dice []entity.Die, value uint) uint {
 	return score
 }
 
-func onePair(dice []entity.Die) uint {
+func onePair(dice []*entity.Die) uint {
 	var score uint
 
 	counts := diceCounts(dice)
@@ -61,7 +61,7 @@ func onePair(dice []entity.Die) uint {
 	return score
 }
 
-func twoPairs(dice []entity.Die) uint {
+func twoPairs(dice []*entity.Die) uint {
 	counts := diceCounts(dice)
 
 	var scores []int
@@ -81,15 +81,15 @@ func twoPairs(dice []entity.Die) uint {
 	return uint(scores[len(scores)-1] + scores[len(scores)-2])
 }
 
-func threeOfAKind(dice []entity.Die) uint {
+func threeOfAKind(dice []*entity.Die) uint {
 	return atLeastCount(dice, 3)
 }
 
-func fourOfAKind(dice []entity.Die) uint {
+func fourOfAKind(dice []*entity.Die) uint {
 	return atLeastCount(dice, 4)
 }
 
-func smallStraight(dice []entity.Die) uint {
+func smallStraight(dice []*entity.Die) uint {
 	counts := diceCounts(dice)
 	if counts[1] > 0 &&
 		counts[2] > 0 &&
@@ -102,7 +102,7 @@ func smallStraight(dice []entity.Die) uint {
 	return 0
 }
 
-func largeStraight(dice []entity.Die) uint {
+func largeStraight(dice []*entity.Die) uint {
 	counts := diceCounts(dice)
 	if counts[2] > 0 &&
 		counts[3] > 0 &&
@@ -115,7 +115,7 @@ func largeStraight(dice []entity.Die) uint {
 	return 0
 }
 
-func fullHouse(dice []entity.Die) uint {
+func fullHouse(dice []*entity.Die) uint {
 	var pairScore uint
 	var threeOfAKindScore uint
 
@@ -142,7 +142,7 @@ func fullHouse(dice []entity.Die) uint {
 	return 0
 }
 
-func chance(dice []entity.Die) uint {
+func chance(dice []*entity.Die) uint {
 	var score uint
 
 	for _, d := range dice {
@@ -152,7 +152,7 @@ func chance(dice []entity.Die) uint {
 	return score
 }
 
-func yatzy(dice []entity.Die) uint {
+func yatzy(dice []*entity.Die) uint {
 	if atLeastCount(dice, 5) > 0 {
 		return 50
 	}
@@ -160,7 +160,7 @@ func yatzy(dice []entity.Die) uint {
 	return 0
 }
 
-func atLeastCount(dice []entity.Die, c uint) uint {
+func atLeastCount(dice []*entity.Die, c uint) uint {
 	counts := diceCounts(dice)
 	for k, v := range counts {
 		if v >= c {
@@ -171,7 +171,7 @@ func atLeastCount(dice []entity.Die, c uint) uint {
 	return 0
 }
 
-func diceCounts(dice []entity.Die) map[uint]uint {
+func diceCounts(dice []*entity.Die) map[uint]uint {
 	counts := map[uint]uint{}
 
 	for _, d := range dice {

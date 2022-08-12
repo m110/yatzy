@@ -3,6 +3,7 @@ package scene
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/m110/yatzy/internal/component"
 	"golang.org/x/image/colornames"
 
 	"github.com/m110/yatzy/internal/entity"
@@ -10,25 +11,49 @@ import (
 
 const (
 	diceNumber = 5
+
+	diePanelWidth  = 64*diceNumber + (1+diceNumber)*dieOffsetX
+	diePanelHeight = 64 + 2*dieOffsetY
+
+	tablePanelWidth  = diePanelWidth
+	tablePanelHeight = 500
+
+	dieOffsetX = 10.0
+	dieOffsetY = 10.0
 )
 
 type Game struct {
-	dice    []entity.Die
-	table   *Table
-	rerolls int
+	dice     []*entity.Die
+	dieIcons []entity.DieIcon
+	table    *Table
+	rerolls  int
 }
 
 func NewGame() *Game {
-	var dice []entity.Die
+	var dice []*entity.Die
+	var dieIcons []entity.DieIcon
 
+	offsetX := dieOffsetX
 	for i := 0; i < diceNumber; i++ {
-		dice = append(dice, entity.NewRandomDie())
+		die := entity.NewRandomDie()
+		dice = append(dice, die)
+
+		position := component.Position{
+			X: offsetX,
+			Y: dieOffsetY,
+		}
+
+		dieIcon := entity.NewDieIcon(die, position)
+		dieIcons = append(dieIcons, dieIcon)
+
+		offsetX += float64(dieIcon.Sprite().Image.Bounds().Max.X) + dieOffsetX
 	}
 
 	return &Game{
-		dice:    dice,
-		table:   NewTable(),
-		rerolls: 0,
+		dice:     dice,
+		dieIcons: dieIcons,
+		table:    NewTable(),
+		rerolls:  0,
 	}
 }
 
@@ -45,6 +70,18 @@ func (g *Game) Update() error {
 		for k, v := range selectionKeys {
 			if inpututil.IsKeyJustPressed(k) {
 				g.dice[v].ToggleSelection()
+			}
+		}
+
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			x, y := ebiten.CursorPosition()
+			for _, d := range g.dieIcons {
+				if int(d.Position().X) < x &&
+					int(d.Position().Y) < y &&
+					int(d.Position().X)+d.Sprite().Image.Bounds().Dx() > x &&
+					int(d.Position().Y)+d.Sprite().Image.Bounds().Dy() > y {
+					d.Die().ToggleSelection()
+				}
 			}
 		}
 
@@ -93,49 +130,28 @@ func (g *Game) RollSelectedDice() {
 	}
 }
 
-const (
-	diePanelWidth  = 64*diceNumber + (1+diceNumber)*dieOffsetX
-	diePanelHeight = 64 + 2*dieOffsetY
-
-	tablePanelWidth  = diePanelWidth
-	tablePanelHeight = 500
-
-	dieOffsetX = 10.0
-	dieOffsetY = 10.0
-
-	highlightBorderOffset = 10.0
-	highlightBorderSize   = 20.0
-)
-
 func (g *Game) Draw(screen *ebiten.Image) {
-	dicePanel := ebiten.NewImage(diePanelWidth, diePanelHeight)
-	dicePanel.Fill(colornames.Forestgreen)
-
-	offsetX := dieOffsetX
-	offsetY := dieOffsetY
-	for _, d := range g.dice {
-		if d.Selected {
-			selectionImage := ebiten.NewImage(d.Sprite.Image.Bounds().Dx(), highlightBorderSize)
-			selectionImage.Fill(colornames.Blueviolet)
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(offsetX, offsetY+float64(d.Sprite.Image.Bounds().Dy())-highlightBorderOffset)
-			dicePanel.DrawImage(selectionImage, op)
-		}
-
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(offsetX, offsetY)
-		dicePanel.DrawImage(d.Sprite.Image, op)
-		offsetX += float64(d.Sprite.Image.Bounds().Max.X) + dieOffsetX
+	var drawers []component.Drawer
+	for _, d := range g.dieIcons {
+		drawers = append(drawers, d)
 	}
-
-	op := &ebiten.DrawImageOptions{}
-	screen.DrawImage(dicePanel, op)
+	dicePanel := entity.NewPanel(component.Rect{
+		Position: component.Position{
+			X: 0,
+			Y: 0,
+		},
+		Size: component.Size{
+			Width:  diePanelWidth,
+			Height: diePanelHeight,
+		},
+	}, colornames.Forestgreen, drawers)
+	dicePanel.Draw(screen)
 
 	tablePanel := ebiten.NewImage(tablePanelWidth, tablePanelHeight)
 	tablePanel.Fill(colornames.Darkgreen)
 	g.table.Draw(tablePanel)
 
-	op = &ebiten.DrawImageOptions{}
+	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, diePanelHeight)
 	screen.DrawImage(tablePanel, op)
 }

@@ -6,12 +6,11 @@ import (
 	"io/fs"
 	"log"
 
-	"github.com/m110/yatzy/assets"
-
-	"golang.org/x/image/font"
-
 	"github.com/hajimehoshi/ebiten/v2"
+	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
+
+	"github.com/m110/yatzy/assets"
 )
 
 const dpi = 72
