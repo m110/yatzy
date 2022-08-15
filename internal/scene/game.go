@@ -3,9 +3,9 @@ package scene
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/m110/yatzy/internal/component"
 	"golang.org/x/image/colornames"
 
+	"github.com/m110/yatzy/internal/component"
 	"github.com/m110/yatzy/internal/entity"
 )
 
@@ -23,34 +23,29 @@ const (
 )
 
 type Game struct {
-	dice     []*entity.Die
-	dieIcons []entity.DieIcon
+	dieIcons []*entity.DieIcon
 	table    *Table
 	rerolls  int
 }
 
 func NewGame() *Game {
-	var dice []*entity.Die
-	var dieIcons []entity.DieIcon
+	var dieIcons []*entity.DieIcon
 
 	offsetX := dieOffsetX
 	for i := 0; i < diceNumber; i++ {
-		die := entity.NewRandomDie()
-		dice = append(dice, die)
 
 		position := component.Position{
 			X: offsetX,
 			Y: dieOffsetY,
 		}
 
-		dieIcon := entity.NewDieIcon(die, position)
+		dieIcon := entity.NewDieIcon(entity.NewRandomDie(), position)
 		dieIcons = append(dieIcons, dieIcon)
 
 		offsetX += float64(dieIcon.Sprite().Image.Bounds().Max.X) + dieOffsetX
 	}
 
 	return &Game{
-		dice:     dice,
 		dieIcons: dieIcons,
 		table:    NewTable(),
 		rerolls:  0,
@@ -66,10 +61,26 @@ var selectionKeys = map[ebiten.Key]int{
 }
 
 func (g *Game) Update() error {
+	for _, d := range g.dieIcons {
+		d.Update()
+	}
+
+	diceRolling := false
+	for _, d := range g.dieIcons {
+		if d.IsRolling() {
+			diceRolling = true
+			break
+		}
+	}
+
+	if diceRolling {
+		return nil
+	}
+
 	if g.rerolls < 2 {
 		for k, v := range selectionKeys {
 			if inpututil.IsKeyJustPressed(k) {
-				g.dice[v].ToggleSelection()
+				g.dieIcons[v].OnClick()
 			}
 		}
 
@@ -80,7 +91,7 @@ func (g *Game) Update() error {
 					int(d.Position().Y) < y &&
 					int(d.Position().X)+d.Sprite().Image.Bounds().Dx() > x &&
 					int(d.Position().Y)+d.Sprite().Image.Bounds().Dy() > y {
-					d.Die().ToggleSelection()
+					d.OnClick()
 				}
 			}
 		}
@@ -89,6 +100,15 @@ func (g *Game) Update() error {
 			g.RollSelectedDice()
 		}
 	} else {
+		if !g.table.ShowingAvailablePoints {
+			var dice []*entity.Die
+			for _, d := range g.dieIcons {
+				dice = append(dice, d.Die())
+			}
+
+			g.table.ShowAvailablePoints(dice)
+		}
+
 		err := g.table.Update()
 		if err != nil {
 			return err
@@ -110,24 +130,18 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) RollAllDice() {
-	for i := range g.dice {
-		g.dice[i].ClearSelection()
-		g.dice[i].Roll()
+	for _, d := range g.dieIcons {
+		d.Roll()
 	}
 }
 
 func (g *Game) RollSelectedDice() {
-	for i, d := range g.dice {
-		if d.Selected {
-			g.dice[i].ClearSelection()
-			g.dice[i].Roll()
+	for _, d := range g.dieIcons {
+		if d.Selected() {
+			d.Roll()
 		}
 	}
 	g.rerolls++
-
-	if g.rerolls == 2 {
-		g.table.ShowAvailablePoints(g.dice)
-	}
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {

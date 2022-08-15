@@ -350,8 +350,8 @@ func TestYatzy(t *testing.T) {
 	}
 }
 
-func diceFromValues(values []uint) []entity.Die {
-	var dice []entity.Die
+func diceFromValues(values []uint) []*entity.Die {
+	var dice []*entity.Die
 
 	for _, v := range values {
 		dice = append(dice, entity.MustNewDie(v))

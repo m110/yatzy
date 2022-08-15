@@ -36,8 +36,8 @@ func sumOfDice(dice []*entity.Die, value uint) uint {
 	var score uint
 
 	for _, d := range dice {
-		if d.Value == value {
-			score += d.Value
+		if d.Value() == value {
+			score += d.Value()
 		}
 	}
 
@@ -146,7 +146,7 @@ func chance(dice []*entity.Die) uint {
 	var score uint
 
 	for _, d := range dice {
-		score += d.Value
+		score += d.Value()
 	}
 
 	return score
@@ -175,11 +175,11 @@ func diceCounts(dice []*entity.Die) map[uint]uint {
 	counts := map[uint]uint{}
 
 	for _, d := range dice {
-		v, ok := counts[d.Value]
+		v, ok := counts[d.Value()]
 		if ok {
-			counts[d.Value] = v + 1
+			counts[d.Value()] = v + 1
 		} else {
-			counts[d.Value] = 1
+			counts[d.Value()] = 1
 		}
 	}
 
