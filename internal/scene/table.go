@@ -161,6 +161,7 @@ func (t *Table) ShowAvailablePoints(dice []*entity.Die) {
 		}
 
 		// t.Boxes[i].AvailablePoints = b.Scoring(dice)
+		_ = i
 	}
 
 	t.ShowingAvailablePoints = true

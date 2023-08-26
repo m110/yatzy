@@ -3,36 +3,36 @@ package scene
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"golang.org/x/image/colornames"
-
 	"github.com/m110/yatzy/internal/component"
 	"github.com/m110/yatzy/internal/entity"
+	"github.com/m110/yatzy/internal/transport"
+	"golang.org/x/image/colornames"
 )
 
 const (
 	diceNumberUI = 5
 
-	diePanelWidth  = 64*diceNumber + (1+diceNumber)*dieOffsetX
-	diePanelHeight = 64 + 2*dieOffsetY
+	DiePanelWidth  = 64*diceNumber + (1+diceNumber)*dieOffsetX
+	DiePanelHeight = 64 + 2*dieOffsetY
 
-	tablePanelWidth  = diePanelWidth
-	tablePanelHeight = 500
+	TablePanelWidth  = DiePanelWidth
+	TablePanelHeight = 500
 
 	dieOffsetX = 10.0
 	dieOffsetY = 10.0
 )
 
 type CommandPublisher interface {
-	PublishCommand(command any) error
+	PublishCommand(command any)
 }
 
-type UI struct {
+type Client struct {
 	dieIcons  []*entity.DieIcon
 	table     *Table
 	publisher CommandPublisher
 }
 
-func NewUI(publisher CommandPublisher) *UI {
+func NewClient(publisher CommandPublisher) *Client {
 	var dieIcons []*entity.DieIcon
 
 	offsetX := dieOffsetX
@@ -49,7 +49,7 @@ func NewUI(publisher CommandPublisher) *UI {
 		offsetX += float64(dieIcon.Sprite().Image.Bounds().Max.X) + dieOffsetX
 	}
 
-	return &UI{
+	return &Client{
 		dieIcons:  dieIcons,
 		table:     NewTable(),
 		publisher: publisher,
@@ -64,13 +64,22 @@ var selectionKeys = map[ebiten.Key]int{
 	ebiten.Key5: 4,
 }
 
-func (u *UI) Update() error {
-	for _, d := range u.dieIcons {
+func (c *Client) HandleEvent(event any) error {
+	switch event := event.(type) {
+	case transport.DiceRolled:
+		_ = event
+	}
+
+	return nil
+}
+
+func (c *Client) Update() error {
+	for _, d := range c.dieIcons {
 		d.Update()
 	}
 
 	diceRolling := false
-	for _, d := range u.dieIcons {
+	for _, d := range c.dieIcons {
 		if d.IsRolling() {
 			diceRolling = true
 			break
@@ -81,16 +90,16 @@ func (u *UI) Update() error {
 		return nil
 	}
 
-	if u.rerolls < 2 {
+	if false {
 		for k, v := range selectionKeys {
 			if inpututil.IsKeyJustPressed(k) {
-				u.dieIcons[v].OnClick()
+				c.dieIcons[v].OnClick()
 			}
 		}
 
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			x, y := ebiten.CursorPosition()
-			for _, d := range u.dieIcons {
+			for _, d := range c.dieIcons {
 				if int(d.Position().X) < x &&
 					int(d.Position().Y) < y &&
 					int(d.Position().X)+d.Sprite().Image.Bounds().Dx() > x &&
@@ -101,56 +110,65 @@ func (u *UI) Update() error {
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			u.RollSelectedDice()
+			//c.RollSelectedDice()
 		}
 	} else {
-		if !u.table.ShowingAvailablePoints {
+		if !c.table.ShowingAvailablePoints {
 			var dice []*entity.Die
-			for _, d := range u.dieIcons {
+			for _, d := range c.dieIcons {
 				dice = append(dice, d.Die())
 			}
 
-			u.table.ShowAvailablePoints(dice)
+			c.table.ShowAvailablePoints(dice)
 		}
 
-		err := u.table.Update()
+		err := c.table.Update()
 		if err != nil {
 			return err
 		}
 
-		if u.table.Full() {
+		if c.table.Full() {
 			// TODO game over
 			return nil
 		}
 
-		if u.table.Ready() {
-			u.table.HideAvailablePoints()
-			u.RollAllDice()
-			u.rerolls = 0
+		if c.table.Ready() {
+			c.table.HideAvailablePoints()
+			//c.RollAllDice()
+			//c.rerolls = 0
 		}
 	}
 
 	return nil
 }
 
-func (u *UI) rollDice() error {
-	for _, d := range g.dieIcons {
-		d.Roll()
-	}
-}
-
-func (u *UI) rerollDice() error {
-	for _, d := range g.dieIcons {
-		if d.Selected() {
+func (c *Client) rollDice() error {
+	/*
+		for _, d := range g.dieIcons {
 			d.Roll()
 		}
-	}
-	g.rerolls++
+
+	*/
+
+	return nil
 }
 
-func (u *UI) Draw(screen *ebiten.Image) {
+func (c *Client) rerollDice() error {
+	/*
+		for _, d := range g.dieIcons {
+			if d.Selected() {
+				d.Roll()
+			}
+		}
+		g.rerolls++
+
+	*/
+	return nil
+}
+
+func (c *Client) Draw(screen *ebiten.Image) {
 	var drawers []component.Drawer
-	for _, d := range u.dieIcons {
+	for _, d := range c.dieIcons {
 		drawers = append(drawers, d)
 	}
 	dicePanel := entity.NewPanel(component.Rect{
@@ -159,25 +177,17 @@ func (u *UI) Draw(screen *ebiten.Image) {
 			Y: 0,
 		},
 		Size: component.Size{
-			Width:  diePanelWidth,
-			Height: diePanelHeight,
+			Width:  DiePanelWidth,
+			Height: DiePanelHeight,
 		},
 	}, colornames.Forestgreen, drawers)
 	dicePanel.Draw(screen)
 
-	tablePanel := ebiten.NewImage(tablePanelWidth, tablePanelHeight)
+	tablePanel := ebiten.NewImage(TablePanelWidth, TablePanelHeight)
 	tablePanel.Fill(colornames.Darkgreen)
-	u.table.Draw(tablePanel)
+	c.table.Draw(tablePanel)
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, diePanelHeight)
+	op.GeoM.Translate(0, DiePanelHeight)
 	screen.DrawImage(tablePanel, op)
-}
-
-func (u *UI) WindowSize() (int, int) {
-	return diePanelWidth, diePanelHeight + tablePanelHeight
-}
-
-func (u *UI) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return outsideWidth, outsideHeight
 }

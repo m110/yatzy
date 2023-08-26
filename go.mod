@@ -1,6 +1,6 @@
 module github.com/m110/yatzy
 
-go 1.17
+go 1.20
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.2.3

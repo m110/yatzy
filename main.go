@@ -2,20 +2,21 @@ package main
 
 import (
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
-	"github.com/m110/yatzy/internal/scene"
+	"github.com/m110/yatzy/internal/game"
 )
 
 func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
-	game := scene.NewGame()
-	ebiten.SetWindowSize(game.WindowSize())
+	g, err := game.NewGame()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err := ebiten.RunGame(game)
+	ebiten.SetWindowSize(g.WindowSize())
+
+	err = ebiten.RunGame(g)
 	if err != nil {
 		log.Fatal(err)
 	}
