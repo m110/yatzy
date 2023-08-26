@@ -12,6 +12,7 @@ import (
 
 	"github.com/m110/yatzy/internal/assets"
 	"github.com/m110/yatzy/internal/entity"
+	"github.com/m110/yatzy/internal/transport"
 )
 
 type Table struct {
@@ -22,22 +23,22 @@ type Table struct {
 func NewTable() *Table {
 	boxes := []*Box{
 		// Upper section
-		{Name: "Ones", Scoring: ones},
-		{Name: "Twos", Scoring: twos},
-		{Name: "Threes", Scoring: threes},
-		{Name: "Fours", Scoring: fours},
-		{Name: "Fives", Scoring: fives},
-		{Name: "Sixes", Scoring: sixes},
+		{Name: "Ones", Type: transport.ScoreTypeOnes},
+		{Name: "Twos", Type: transport.ScoreTypeTwos},
+		{Name: "Threes", Type: transport.ScoreTypeThrees},
+		{Name: "Fours", Type: transport.ScoreTypeFours},
+		{Name: "Fives", Type: transport.ScoreTypeFives},
+		{Name: "Sixes", Type: transport.ScoreTypeSixes},
 		// Lower section
-		{Name: "One Pair", Scoring: onePair},
-		{Name: "Two Pairs", Scoring: twoPairs},
-		{Name: "Three of a Kind", Scoring: threeOfAKind},
-		{Name: "Four of a Kind", Scoring: fourOfAKind},
-		{Name: "Small Straight", Scoring: smallStraight},
-		{Name: "Large Straight", Scoring: largeStraight},
-		{Name: "Full House", Scoring: fullHouse},
-		{Name: "Chance", Scoring: chance},
-		{Name: "Yatzy", Scoring: yatzy},
+		{Name: "One Pair", Type: transport.ScoreTypeOnePair},
+		{Name: "Two Pairs", Type: transport.ScoreTypeTwoPairs},
+		{Name: "Three of a Kind", Type: transport.ScoreTypeThreeOfAKind},
+		{Name: "Four of a Kind", Type: transport.ScoreTypeFourOfAKind},
+		{Name: "Small Straight", Type: transport.ScoreTypeSmallStraight},
+		{Name: "Large Straight", Type: transport.ScoreTypeLargeStraight},
+		{Name: "Full House", Type: transport.ScoreTypeFullHouse},
+		{Name: "Chance", Type: transport.ScoreTypeChance},
+		{Name: "Yatzy", Type: transport.ScoreTypeYatzy},
 	}
 
 	return &Table{
@@ -159,7 +160,7 @@ func (t *Table) ShowAvailablePoints(dice []*entity.Die) {
 			continue
 		}
 
-		t.Boxes[i].AvailablePoints = b.Scoring(dice)
+		// t.Boxes[i].AvailablePoints = b.Scoring(dice)
 	}
 
 	t.ShowingAvailablePoints = true
@@ -193,10 +194,10 @@ func (t *Table) UpperSectionBonus() uint {
 
 type Box struct {
 	Name            string
+	Type            transport.ScoreType
 	Filled          bool
 	Points          uint
 	AvailablePoints uint
-	Scoring         scoringFunc
 	Selected        bool
 }
 
